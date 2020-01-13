@@ -1,4 +1,14 @@
 #include "Barrier.h"
+#define WAIT(SEM) ({\
+__typeof(SEM) sem=(SEM);\
+sem_wait(sem);\
+})
+#define SIGNAL(SEM) ({\
+__typeof(SEM) sem=(SEM);\
+sem_post(sem);\
+})
+
+
 
 Barrier::Barrier(unsigned int num_of_threads){
     this->numOfThreads=num_of_threads;
@@ -10,13 +20,36 @@ Barrier::Barrier(unsigned int num_of_threads){
 }
 
 unsigned int Barrier::waitingThreads(){
-return (this->currentBarrierToUse==1?
+return (this->currentBarrierToUse==2?
         (this->numOfThreads-this->countOfThreads):
         (this->countOfThreads));
 }
 
 void  Barrier::wait(){
-
+    switch(this->currentBarrierToUse){
+        case 1:
+            WAIT(this->mutex);
+            this->countOfThreads++;
+            if(this->countOfThreads==this->numOfThreads){
+                for(int i=0;i<this->numOfThreads;i++)
+                    SIGNAL(this->barrier1);
+                this->currentBarrierToUse=2;
+            }
+            SIGNAL(this->mutex);
+            WAIT(this->barrier1);
+            break;
+        case 2:
+            WAIT(this->mutex);
+            this->countOfThreads--;
+            if(this->countOfThreads==0){
+                for(int j=0;j<this->numOfThreads;j++)
+                    SIGNAL(this->barrier2);
+                this->currentBarrierToUse=1;
+            }
+            SIGNAL(this->mutex);
+            WAIT(this->barrier2);
+            break;
+    }
 }
 
 Barrier::~Barrier(){
