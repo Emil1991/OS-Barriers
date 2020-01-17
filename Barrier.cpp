@@ -1,55 +1,47 @@
 #include "Barrier.h"
-#define WAIT(SEM) ({\
-__typeof(SEM) sem=(SEM);\
-sem_wait(&sem);\
-})
-#define SIGNAL(SEM) ({\
-__typeof(SEM) sem=(SEM);\
-sem_post(&sem);\
-})
+#include <iostream>
 
-
+using namespace std;
 
 Barrier::Barrier(unsigned int num_of_threads){
-    this->numOfThreads=num_of_threads;
-    this->countOfThreads=0;
-    this->currentBarrierToUse=1;
+    numOfThreads=num_of_threads;
+    countOfThreads=0;
+    currentBarrierToUse=1;
     sem_init(&mutex,0,1);
     sem_init(&barrier1,0,0);
     sem_init(&barrier2,0,0);
 }
 
 unsigned int Barrier::waitingThreads(){
-return (this->currentBarrierToUse==2?
-        (this->numOfThreads-this->countOfThreads):
-        (this->countOfThreads));
+return (currentBarrierToUse==2?
+        (numOfThreads-countOfThreads):
+        (countOfThreads));
 }
 
 void  Barrier::wait(){
     switch(this->currentBarrierToUse){
         case 1:
-            WAIT(this->mutex);
-            this->countOfThreads++;
-            if(this->countOfThreads==this->numOfThreads){
-                for(int i=0;i<this->numOfThreads;i++)
-                    SIGNAL(barrier1);
+            sem_wait(&mutex);
+            if(++countOfThreads==numOfThreads){
                 this->currentBarrierToUse=2;
+                for(int i=0;i<numOfThreads;i++){
+                    sem_post(&barrier1);
+                }
             }
-            SIGNAL(mutex);
-            WAIT(barrier1);
-            break;
+            sem_post(&mutex);
+            sem_wait(&barrier1);
         case 2:
-            WAIT(mutex);
-            this->countOfThreads--;
-            if(this->countOfThreads==0){
-                for(int j=0;j<this->numOfThreads;j++)
-                    SIGNAL(barrier2);
+            sem_wait(&mutex);
+            if(--countOfThreads==0){
                 this->currentBarrierToUse=1;
+                for(int j=0;j<this->numOfThreads;j++) {
+                    sem_post(&barrier2);
+                }
             }
-            SIGNAL(mutex);
-            WAIT(barrier2);
-            break;
+            sem_post(&mutex);
+            sem_wait(&barrier2);
     }
+
 }
 
 Barrier::~Barrier(){
