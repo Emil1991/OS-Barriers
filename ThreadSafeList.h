@@ -81,12 +81,12 @@ class List
                     pthread_mutex_unlock(&pred->lock);
                     return true;
                 }else{
-                    pthread_mutex_lock(&curr->lock);
+//                    pthread_mutex_lock(&curr->lock);
                     while (curr && curr->data<=data) {
+                        pthread_mutex_lock(&curr->lock);
                         pthread_mutex_unlock(&pred->lock);
                         pred=curr;
                         curr=curr->next;
-                        pthread_mutex_lock(&curr->lock);
                     }
 
                     if(pred->data==data){//already exists node with same data
@@ -98,7 +98,11 @@ class List
                         Node* newNode =new Node(data,curr);
                         pred->next=newNode;
                         size++;
-                        pthread_mutex_unlock(&curr->lock);
+                        __add_hook();
+
+                        if(curr)
+                            pthread_mutex_unlock(&curr->lock);
+
                         pthread_mutex_unlock(&pred->lock);
                         return true;
                     }
@@ -126,6 +130,7 @@ class List
                     if(curr->data==value){//found the item
                         pred->next=curr->next;
                         size--;
+                        __remove_hook();
                         pthread_mutex_unlock(&curr->lock);
                         pthread_mutex_unlock(&pred->lock);
                         return true;
