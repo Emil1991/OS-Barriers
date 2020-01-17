@@ -15,7 +15,8 @@ class List
          * Constructor
          */
         List() {
-
+        head=new Node();
+        size=0;
         }
 
 
@@ -54,7 +55,35 @@ class List
          * @return true if a new node was added and false otherwise
          */
         bool insert(const T& data) {
-			//TODO: add your implementation
+            Node *pred, *curr;
+
+            try {
+                pred=head;
+                curr=pred->next;
+                if(curr==NULL){//add first node
+                    Node* newNode= new Node(data);
+                    head->next=newNode;
+                    size++;
+                    return true;
+                }else{
+                    while (curr && curr->data<=data) {
+                        pred=curr;
+                        curr=curr->next;
+                    }
+
+                    if(pred->data==data){//already exists node with same data
+                        cout<<"already exist" <<endl;
+                        return false;
+                    }else{
+                        Node* newNode =new Node(data,curr);
+                        pred->next=newNode;
+                        size++;
+                        return true;
+                    }
+                }
+            }catch(exception e){
+                return false;
+            }
         }
 
         /**
@@ -63,7 +92,15 @@ class List
          * @return true if a matched node was found and removed and false otherwise
          */
         bool remove(const T& value) {
-			//TODO: add your implementation
+            Node *pred, *curr;
+
+            try{
+                pred=head;
+                curr=pred->next;
+            }catch(exception e){
+                return false;
+            }
+
         }
 
         /**
@@ -71,8 +108,9 @@ class List
          * @return the list size
          */
         unsigned int getSize() {
-			//TODO: add your implementation
+			return size;
         }
+
 
 		// Don't remove
         void print() {
@@ -106,6 +144,7 @@ class List
 
     private:
         Node* head;
+        unsigned int size;
     // TODO: Add your own methods and data members
 };
 
