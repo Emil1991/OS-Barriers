@@ -19,11 +19,11 @@ return (currentBarrierToUse==2?
 }
 
 void  Barrier::wait(){
-    switch(this->currentBarrierToUse){
+    switch(currentBarrierToUse){
         case 1:
             sem_wait(&mutex);
             if(++countOfThreads==numOfThreads){
-                this->currentBarrierToUse=2;
+                currentBarrierToUse=2;
                 for(int i=0;i<numOfThreads;i++){
                     sem_post(&barrier1);
                 }
@@ -33,8 +33,8 @@ void  Barrier::wait(){
         case 2:
             sem_wait(&mutex);
             if(--countOfThreads==0){
-                this->currentBarrierToUse=1;
-                for(int j=0;j<this->numOfThreads;j++) {
+                currentBarrierToUse=1;
+                for(int j=0;j<numOfThreads;j++) {
                     sem_post(&barrier2);
                 }
             }
