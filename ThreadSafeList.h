@@ -97,10 +97,20 @@ class List
             try{
                 pred=head;
                 curr=pred->next;
+
+                while(curr && curr->data<=value){
+                    if(curr->data==value){//found the item
+                        pred->next=curr->next;
+                        size--;
+                        return true;
+                    }
+                    pred=curr;
+                    curr=curr->next;
+                }
+                return false;
             }catch(exception e){
                 return false;
             }
-
         }
 
         /**
