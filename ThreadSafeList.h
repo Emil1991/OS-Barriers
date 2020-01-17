@@ -14,18 +14,37 @@ class List
         /**
          * Constructor
          */
-        List() { //TODO: add your implementation }
+        List() {
+
+        }
+
 
         /**
          * Destructor
          */
-        ~List(){ //TODO: add your implementation }
+        ~List(){
+
+        }
 
         class Node {
          public:
           T data;
           Node *next;
-          // TODO: Add your methods and data members
+
+          Node(){
+              next=NULL;
+          }
+
+          Node(T newData){
+              data=newData;
+              next=NULL;
+          }
+
+          Node(T newData,Node* nextNode){
+              data=newData;
+              next=nextNode;
+          }
+
         };
 
         /**
@@ -57,7 +76,7 @@ class List
 
 		// Don't remove
         void print() {
-          pthread_mutex_lock(&list_mutex);
+//          pthread_mutex_lock(&list_mutex);
           Node* temp = head;
           if (temp == NULL)
           {
@@ -77,7 +96,7 @@ class List
             }
           }
           cout << endl;
-          pthread_mutex_unlock(&list_mutex);
+//          pthread_mutex_unlock(&list_mutex);
         }
 
 		// Don't remove
