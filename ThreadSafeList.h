@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip> // std::setw
 
+
 using namespace std;
 
 template <typename T>
@@ -16,7 +17,11 @@ class List
          */
         List() {
         head=new Node();
+        if(!head)
+            ERROR("List");
+
         size=0;
+        pthread_mutex_init(&sizeLock,NULL);
         }
 
 
@@ -25,6 +30,7 @@ class List
          */
         ~List(){
             removeList(head);
+            pthread_mutex_destroy(&sizeLock);
         }
 
 
@@ -74,9 +80,15 @@ class List
 
                 if(curr==NULL){//add first node
                     Node* newNode= new Node(data);
+                    if(!newNode)
+                        ERROR("insert");
+
                     pthread_mutex_lock(&newNode->lock);
                     head->next=newNode;
+                    pthread_mutex_lock(&sizeLock);
                     size++;
+                    pthread_mutex_unlock(&sizeLock);
+                    __add_hook();
                     pthread_mutex_unlock(&newNode->lock);
                     pthread_mutex_unlock(&pred->lock);
                     return true;
@@ -91,13 +103,18 @@ class List
 
                     if(pred->data==data){//already exists node with same data
                         cout<<"already exist" <<endl;
-                        pthread_mutex_unlock(&curr->lock);
+                        if(curr)
+                            pthread_mutex_unlock(&curr->lock);
                         pthread_mutex_unlock(&pred->lock);
                         return false;
                     }else{
                         Node* newNode =new Node(data,curr);
+                        if(!newNode)
+                            ERROR("insert");
                         pred->next=newNode;
+                        pthread_mutex_lock(&sizeLock);
                         size++;
+                        pthread_mutex_unlock(&sizeLock);
                         __add_hook();
 
                         if(curr)
@@ -107,8 +124,9 @@ class List
                         return true;
                     }
                 }
-            }catch(exception e){
-                return false;
+            }catch(const char* msg){
+                cerr<<msg<<":failed"<<endl;
+                exit(-1);
             }
         }
 
@@ -124,12 +142,18 @@ class List
                 pred=head;
                 pthread_mutex_lock(&pred->lock);
                 curr=pred->next;
+
+                if(!curr)
+                    return false;
+
                 pthread_mutex_lock(&curr->lock);
 
                 while(curr && curr->data<=value){
                     if(curr->data==value){//found the item
                         pred->next=curr->next;
+                        pthread_mutex_lock(&sizeLock);
                         size--;
+                        pthread_mutex_unlock(&sizeLock);
                         __remove_hook();
                         pthread_mutex_unlock(&curr->lock);
                         pthread_mutex_unlock(&pred->lock);
@@ -153,7 +177,11 @@ class List
          * @return the list size
          */
         unsigned int getSize() {
-			return size;
+            unsigned int tempSize;
+            pthread_mutex_lock(&sizeLock);
+            tempSize=size;
+            pthread_mutex_unlock(&sizeLock);
+			return tempSize;
         }
 
 
@@ -190,12 +218,18 @@ class List
     private:
         Node* head;
         unsigned int size;
+        pthread_mutex_t sizeLock;
 
         void removeList(Node* head){
             if(!head)
                 return;
             removeList(head->next);
             free(head);
+        }
+
+        void ERROR(const char* functionName){
+            cerr<<functionName<<":failed"<<endl;
+            exit(-1);
         }
 };
 
