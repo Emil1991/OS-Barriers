@@ -10,8 +10,13 @@ public:
 	unsigned int waitingThreads();
     ~Barrier();
 
-	// TODO: define the member variables
-	// Remember: you can only use semaphores!
+    unsigned int numOfThreads;
+    unsigned int countOfThreads;
+    unsigned int currentBarrierToUse;
+    sem_t mutex;
+    sem_t barrier1;
+    sem_t barrier2;
+
 };
 
 #endif // BARRIER_H_

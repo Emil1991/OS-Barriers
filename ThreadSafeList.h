@@ -81,13 +81,11 @@ public:
                 if (!newNode){
                     ERROR("insert");
                 }
-//                pthread_mutex_lock(&newNode->lock);
                 head->next = newNode;
                 pthread_mutex_lock(&sizeLock);
                 size++;
                 pthread_mutex_unlock(&sizeLock);
                 __add_hook();
-//                pthread_mutex_unlock(&newNode->lock);
                 pthread_mutex_unlock(&pred->lock);
                 return true;
             } else if(data<curr->data){//need to place new data first in list
@@ -102,7 +100,6 @@ public:
                 pthread_mutex_unlock(&pred->lock);
                 return true;
             }else {
-//                    pthread_mutex_lock(&curr->lock);
                 while (curr && curr->data <= data) {
                     pthread_mutex_lock(&curr->lock);
                     pthread_mutex_unlock(&pred->lock);
@@ -160,7 +157,6 @@ public:
                 pthread_mutex_unlock(&pred->lock);
                 return false;
             }
-//            pthread_mutex_lock(&curr->lock);
             while (curr && curr->data <= value) {
                 pthread_mutex_lock(&curr->lock);
                 if (curr->data == value) {//found the item
@@ -177,8 +173,6 @@ public:
                 pred = curr;
                 curr = curr->next;
             }
-//            if(curr)
-//                pthread_mutex_unlock(&curr->lock);
             pthread_mutex_unlock(&pred->lock);
             return false;
         } catch (exception e) {
